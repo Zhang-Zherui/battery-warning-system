@@ -71,6 +71,11 @@
             <artifactId>rocketmq-spring-boot-starter</artifactId>
             <version>2.2.3</version> <!-- 或与你其他模块统一的版本 -->
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
     <dependencyManagement>

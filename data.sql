@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS battery_signal;
 DROP TABLE IF EXISTS warning_rule;
 DROP TABLE IF EXISTS battery_vehicle;
 DROP TABLE IF EXISTS alert_message;
+
 -- 创建车辆信息表
 CREATE TABLE battery_vehicle (
                                  id INT PRIMARY KEY AUTO_INCREMENT,  -- 自增ID
@@ -19,7 +20,9 @@ CREATE TABLE battery_vehicle (
                                  battery_type VARCHAR(50) NOT NULL,  -- 电池类型 (三元电池 / 铁锂电池)
                                  total_mileage INT NOT NULL,         -- 总里程 (单位：km)
                                  battery_health INT NOT NULL,        -- 电池健康状态 (百分比)
-                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 插入时间，自动生成
+                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 插入时间，自动生成
+    -- 为 vid 字段添加索引
+                                 INDEX idx_vid (vid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 创建预警规则表
@@ -32,7 +35,11 @@ CREATE TABLE warning_rule (
                               alert_level INT NOT NULL,           -- 报警等级
                               status INT DEFAULT 1,               -- 状态：1 启用，0 禁用
                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 记录创建时间
-                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP  -- 记录更新时间
+                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  -- 记录更新时间
+    -- 为 warn_type 和 battery_type 添加复合索引
+                              INDEX idx_warn_type_battery_type (warn_type, battery_type),
+    -- 为 status 字段添加索引
+                              INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 创建电池信号表
@@ -42,8 +49,13 @@ CREATE TABLE battery_signal (
                                 warn_id INT NOT NULL,               -- 规则编号
                                 max DOUBLE NOT NULL,                -- 最高电压 (Mx) 或 最高电流 (Ix)
                                 min DOUBLE NOT NULL,                -- 最小电压 (Mi) 或 最小电流 (Ii)
-                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP-- 插入时间，自动生成
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 插入时间，自动生成
+    -- 为 car_id 和 warn_id 添加复合索引
+                                INDEX idx_car_id_warn_id (car_id, warn_id),
+    -- 为 created_at 添加索引
+                                INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- 创建预警信息表
 CREATE TABLE alert_message (
                                id INT PRIMARY KEY AUTO_INCREMENT,  -- 自增ID
@@ -51,7 +63,11 @@ CREATE TABLE alert_message (
                                warn_id INT NOT NULL,               -- 规则编号
                                alert_level INT NOT NULL,           -- 预警等级
                                battery_type VARCHAR(50) NOT NULL,  -- 电池类型
-                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- 插入时间，自动生成
+                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 插入时间，自动生成
+    -- 为 car_id 和 warn_id 添加复合索引
+                               INDEX idx_alert_car_id_warn_id (car_id, warn_id),
+    -- 为 created_at 添加索引
+                               INDEX idx_alert_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 插入车辆信息
@@ -60,7 +76,6 @@ INSERT INTO battery_vehicle (vid, battery_type, total_mileage, battery_health) V
                                                                                    (2, '铁锂电池', 600, 95),
                                                                                    (3, '三元电池', 300, 98);
 
--- 插入预警规则
 -- 插入预警规则
 INSERT INTO warning_rule (warn_type, battery_type, range_start, range_end, alert_level) VALUES
                                                                                             (1, '三元电池', 5, 100, 0),
@@ -83,4 +98,3 @@ INSERT INTO warning_rule (warn_type, battery_type, range_start, range_end, alert
                                                                                             (2, '铁锂电池', 0.5, 1, 1),
                                                                                             (2, '铁锂电池', 0.2, 0.5, 2),
                                                                                             (2, '铁锂电池', 0, 0.2, 10);
-

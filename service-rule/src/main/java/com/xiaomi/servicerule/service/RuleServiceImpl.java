@@ -40,6 +40,7 @@ public class RuleServiceImpl implements RuleServiceApi {
                 }
             }
         }
+
         List<WarningRule> rules = warningRuleMapper.selectList(
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<WarningRule>()
                         .eq("warn_type", warnType)
@@ -47,21 +48,27 @@ public class RuleServiceImpl implements RuleServiceApi {
                         .eq("status", 1)
                         .orderByAsc("range_start")
         );
+
         if (rules.isEmpty()) {
             return -1;
         }
+
         Map<Object, Object> ruleMap = rules.stream()
                 .collect(Collectors.toMap(
-                        WarningRule::getRangeStart,
-                        rule -> rule.getRangeStart() + "," + rule.getRangeEnd() + "," + rule.getAlertLevel()
+                        rule -> rule.getRangeStart().toString(),
+                        rule -> rule.getRangeStart().toString() + "," +
+                                rule.getRangeEnd().toString() + "," +
+                                rule.getAlertLevel()
                 ));
+
         redisTemplate.opsForHash().putAll(redisKey, ruleMap);
+
         for (WarningRule rule : rules) {
             if (difference >= rule.getRangeStart() && difference < rule.getRangeEnd()) {
                 return rule.getAlertLevel();
             }
         }
+
         return -1;
     }
 }
-
