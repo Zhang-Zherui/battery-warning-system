@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+  name: service-rule
+  datasource:
+    url: jdbc:mysql://localhost:3306/battery_warning_system?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+dubbo:
+  application:
+    name: ${spring.name}
+  registry:
+    address: nacos://10.83.171.180:8848
+  protocol:
+    name: dubbo
+    port: -1  # 自动分配端口，防止冲突
+  consumer:
+    check: false  # 防止启动时报错
+  provider:
+    timeout: 5000  # 可选：提供者统一超时时间
+  config-center:
+    enabled: false  # 不使用额外配置中心

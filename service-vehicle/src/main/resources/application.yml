@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: service-vehicle
+  redis:
+    host: localhost
+    port: 6379
+    database: 1
+  datasource:
+    url: jdbc:mysql://localhost:3306/battery_warning_system?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+dubbo:
+  application:
+    name: ${spring.application.name}
+  registry:
+    address: nacos://10.83.171.180:8848
+  protocol:
+    name: dubbo
+    port: -1
+  consumer:
+    check: false
+  provider:
+    timeout: 5000
+server:
+  port: 8083
